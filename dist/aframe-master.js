@@ -71532,7 +71532,7 @@ module.exports.AScene = registerElement('a-scene', {
       value: function (useAR) {
         var self = this;
         var vrDisplay;
-        var vrManager = self.renderer.vr;
+        var vrManager = self.renderer.xr;
 
         // Don't enter VR if already in VR.
         if (this.is('vr-mode')) { return Promise.resolve('Already in VR.'); }
@@ -71638,7 +71638,7 @@ module.exports.AScene = registerElement('a-scene', {
       value: function () {
         var self = this;
         var vrDisplay;
-        var vrManager = this.renderer.vr;
+        var vrManager = this.renderer.xr;
 
         // Don't exit VR if not in VR.
         if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
@@ -71822,8 +71822,8 @@ module.exports.AScene = registerElement('a-scene', {
           return;
         }
 
-        var isPresenting = this.renderer.vr.isPresenting();
-        isVRPresenting = this.renderer.vr.enabled && isPresenting;
+        var isPresenting = this.renderer.xr.isPresenting();
+        isVRPresenting = this.renderer.xr.enabled && isPresenting;
 
         // Do not update renderer, if a camera or a canvas have not been injected.
         // In VR mode, three handles canvas resize based on the dimensions returned by
@@ -72011,7 +72011,7 @@ module.exports.AScene = registerElement('a-scene', {
         this.addEventListener('loaded', function () {
           var renderer = this.renderer;
           var vrDisplay;
-          var vrManager = this.renderer.vr;
+          var vrManager = this.renderer.xr;
           AEntity.prototype.play.call(this);  // .play() *before* render.
 
           if (sceneEl.renderStarted) { return; }
@@ -74975,7 +74975,6 @@ function removeDefaultCamera (sceneEl) {
 },{"../constants/":52,"../core/system":71}],117:[function(_dereq_,module,exports){
 var geometries = _dereq_('../core/geometry').geometries;
 var registerSystem = _dereq_('../core/system').registerSystem;
-var THREE = _dereq_('../lib/three');
 
 /**
  * System for geometry component.
@@ -75078,7 +75077,7 @@ function createGeometry (data) {
   if (!GeometryClass) { throw new Error('Unknown geometry `' + geometryType + '`'); }
 
   geometryInstance.init(data);
-  return toBufferGeometry(geometryInstance.geometry, data.buffer);
+  return geometryInstance.geometry;
 }
 
 /**
@@ -75095,24 +75094,7 @@ function incrementCacheCount (cacheCount, hash) {
   cacheCount[hash] = cacheCount[hash] === undefined ? 1 : cacheCount[hash] + 1;
 }
 
-/**
- * Transform geometry to BufferGeometry if `doBuffer`.
- *
- * @param {object} geometry
- * @param {boolean} doBuffer
- * @returns {object} Geometry.
- */
-function toBufferGeometry (geometry, doBuffer) {
-  var bufferGeometry;
-  if (!doBuffer) { return geometry; }
-
-  bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
-  bufferGeometry.metadata = {type: geometry.type, parameters: geometry.parameters || {}};
-  geometry.dispose();  // Dispose no longer needed non-buffer geometry.
-  return bufferGeometry;
-}
-
-},{"../core/geometry":61,"../core/system":71,"../lib/three":107}],118:[function(_dereq_,module,exports){
+},{"../core/geometry":61,"../core/system":71}],118:[function(_dereq_,module,exports){
 var registerSystem = _dereq_('../core/system').registerSystem;
 var THREE = _dereq_('../lib/three');
 
@@ -75686,8 +75668,7 @@ module.exports.System = registerSystem('renderer', {
     renderer.physicallyCorrectLights = data.physicallyCorrectLights;
 
     if (data.colorManagement || data.gammaOutput) {
-      renderer.gammaOutput = true;
-      renderer.gammaFactor = 2.2;
+      renderer.outputEncoding = THREE.sRGBEncoding;
       if (data.gammaOutput) {
         warn('Property `gammaOutput` is deprecated. Use `renderer="colorManagement: true;"` instead.');
       }

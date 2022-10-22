@@ -81,10 +81,6 @@ require('./core/a-mixin');
 require('./extras/components/');
 require('./extras/primitives/');
 
-console.log('A-Frame Version: https://github.com/MozillaReality/aframe');
-console.log('three Version: https://github.com/MozillaReality/three.js');
-console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
-
 module.exports = window.AFRAME = {
   AComponent: require('./core/component').Component,
   AEntity: AEntity,
